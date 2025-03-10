@@ -1,0 +1,315 @@
+// Funciones para crear gráficos dinámicos con Chart.js
+
+// Función para generar colores aleatorios
+function generarColores(cantidad) {
+    const colores = [];
+    const coloresBorde = [];
+    
+    for (let i = 0; i < cantidad; i++) {
+        // Generar color base
+        const r = Math.floor(Math.random() * 200);
+        const g = Math.floor(Math.random() * 200);
+        const b = Math.floor(Math.random() * 200);
+        
+        // Color de fondo con transparencia
+        colores.push(`rgba(${r}, ${g}, ${b}, 0.6)`);
+        
+        // Color del borde más oscuro
+        coloresBorde.push(`rgba(${r-40}, ${g-40}, ${b-40}, 1)`);
+    }
+    
+    return {
+        colores,
+        coloresBorde
+    };
+}
+
+// Gráfico de distribución por género
+function crearGraficoGenero(elementId, datos) {
+    const ctx = document.getElementById(elementId);
+    if (!ctx) return null;
+    
+    // Preparar datos
+    const labels = Object.keys(datos);
+    const values = Object.values(datos);
+    
+    // Generar colores
+    const { colores, coloresBorde } = generarColores(labels.length);
+    
+    // Crear gráfico
+    return new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: colores,
+                borderColor: coloresBorde,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'Distribución por Género'
+                }
+            },
+            cutout: '70%'
+        }
+    });
+}
+
+// Gráfico de distribución por municipio
+function crearGraficoMunicipio(elementId, datos) {
+    const ctx = document.getElementById(elementId);
+    if (!ctx) return null;
+    
+    // Preparar datos
+    const labels = Object.keys(datos);
+    const values = Object.values(datos);
+    
+    // Generar colores
+    const { colores, coloresBorde } = generarColores(labels.length);
+    
+    // Crear gráfico
+    return new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Personas atendidas',
+                data: values,
+                backgroundColor: colores,
+                borderColor: coloresBorde,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: 'Distribución por Municipio'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// Gráfico de tendencia mensual
+function crearGraficoTendencia(elementId, datos) {
+    const ctx = document.getElementById(elementId);
+    if (!ctx) return null;
+    
+    // Crear gráfico
+    return new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: datos.labels,
+            datasets: [
+                {
+                    label: 'Atendidos',
+                    data: datos.atendidos,
+                    backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                    borderColor: 'rgba(78, 115, 223, 1)',
+                    pointRadius: 3,
+                    pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                    pointBorderColor: 'rgba(78, 115, 223, 1)',
+                    pointHoverRadius: 3,
+                    fill: true,
+                    tension: 0.3
+                },
+                {
+                    label: 'Colocados',
+                    data: datos.colocados,
+                    backgroundColor: 'rgba(28, 200, 138, 0.05)',
+                    borderColor: 'rgba(28, 200, 138, 1)',
+                    pointRadius: 3,
+                    pointBackgroundColor: 'rgba(28, 200, 138, 1)',
+                    pointBorderColor: 'rgba(28, 200, 138, 1)',
+                    pointHoverRadius: 3,
+                    fill: true,
+                    tension: 0.3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'Tendencia Mensual'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// Gráfico de eficiencia (% colocados)
+function crearGraficoEficiencia(elementId, datos) {
+    const ctx = document.getElementById(elementId);
+    if (!ctx) return null;
+    
+    // Calcular porcentaje
+    const total = datos.atendidos;
+    const colocados = datos.colocados;
+    const porcentaje = Math.round((colocados / total) * 100);
+    
+    // Crear gráfico
+    return new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Colocados', 'No colocados'],
+            datasets: [{
+                data: [porcentaje, 100 - porcentaje],
+                backgroundColor: ['rgba(28, 200, 138, 0.8)', 'rgba(231, 74, 59, 0.8)'],
+                borderColor: ['rgba(28, 200, 138, 1)', 'rgba(231, 74, 59, 1)'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'Eficiencia (% Colocados)'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.raw}%`;
+                        }
+                    }
+                }
+            },
+            cutout: '80%'
+        }
+    });
+}
+
+// Gráfico de comparación mensual
+function crearGraficoComparacion(elementId, datos) {
+    const ctx = document.getElementById(elementId);
+    if (!ctx) return null;
+    
+    // Crear gráfico
+    return new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: datos.labels,
+            datasets: [
+                {
+                    label: 'Mes Actual',
+                    data: datos.actual,
+                    backgroundColor: 'rgba(78, 115, 223, 0.8)',
+                    borderColor: 'rgba(78, 115, 223, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Mes Anterior',
+                    data: datos.anterior,
+                    backgroundColor: 'rgba(246, 194, 62, 0.8)',
+                    borderColor: 'rgba(246, 194, 62, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'Comparación con Mes Anterior'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// Función para actualizar todos los gráficos con datos reales
+function actualizarGraficos(datos) {
+    // Limpiar gráficos existentes
+    Chart.helpers.each(Chart.instances, function(instance) {
+        instance.destroy();
+    });
+    
+    // Crear nuevos gráficos con datos reales
+    crearGraficoGenero('generoChart', datos.genero);
+    
+    crearGraficoTendencia('tendenciaChart', {
+        labels: datos.meses,
+        atendidos: datos.atendidosPorMes,
+        colocados: datos.colocadosPorMes
+    });
+    
+    // Si existen los elementos, crear los gráficos adicionales
+    if (document.getElementById('municipioChart')) {
+        crearGraficoMunicipio('municipioChart', datos.municipio);
+    }
+    
+    if (document.getElementById('eficienciaChart')) {
+        crearGraficoEficiencia('eficienciaChart', {
+            atendidos: datos.totalAtendidos,
+            colocados: datos.totalColocados
+        });
+    }
+    
+    if (document.getElementById('comparacionChart')) {
+        crearGraficoComparacion('comparacionChart', {
+            labels: ['Atendidos', 'Colocados', 'Cursos'],
+            actual: [datos.mesActual.atendidos, datos.mesActual.colocados, datos.mesActual.cursos],
+            anterior: [datos.mesAnterior.atendidos, datos.mesAnterior.colocados, datos.mesAnterior.cursos]
+        });
+    }
+}
+
+// Exportar funciones
+window.chartService = {
+    generarColores,
+    crearGraficoGenero,
+    crearGraficoMunicipio,
+    crearGraficoTendencia,
+    crearGraficoEficiencia,
+    crearGraficoComparacion,
+    actualizarGraficos
+};
+Last edited 3 minutes ago
+
+

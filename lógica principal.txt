@@ -1,0 +1,244 @@
+// Funcionalidad principal de la aplicación
+document.addEventListener('DOMContentLoaded', function() {
+    // Navegación entre secciones
+    setupNavigation();
+    
+    // Configurar toggle del sidebar
+    setupSidebarToggle();
+    
+    // Configurar muestra/oculta campos de colocación
+    setupColocadoToggle();
+    
+    // Inicializar gráficos
+    initCharts();
+    
+    // Inicializar Firebase (si está disponible)
+    initFirebase();
+    
+    // Inicializar formularios
+    setupFormSubmit();
+});
+
+// Navegación entre secciones
+function setupNavigation() {
+    const navLinks = document.querySelectorAll('.nav-link[data-section]');
+    const sections = document.querySelectorAll('.content-section');
+    const sectionTitle = document.getElementById('current-section-title');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Obtener el ID de la sección
+            const targetSectionId = this.getAttribute('data-section') + '-section';
+            
+            // Desactivar todos los enlaces activos
+            navLinks.forEach(navLink => navLink.classList.remove('active'));
+            
+            // Activar el enlace actual
+            this.classList.add('active');
+            
+            // Ocultar todas las secciones
+            sections.forEach(section => section.classList.add('hidden'));
+            
+            // Mostrar la sección objetivo
+            document.getElementById(targetSectionId).classList.remove('hidden');
+            
+            // Actualizar título
+            sectionTitle.textContent = this.textContent.trim();
+        });
+    });
+}
+
+// Toggle del sidebar
+function setupSidebarToggle() {
+    const toggleBtn = document.getElementById('toggle-sidebar');
+    const wrapper = document.querySelector('.wrapper');
+    
+    toggleBtn.addEventListener('click', function() {
+        wrapper.classList.toggle('sidebar-collapsed');
+        
+        // Cambiar texto e icono del botón
+        if (wrapper.classList.contains('sidebar-collapsed')) {
+            this.innerHTML = '<i class="fas fa-chevron-right"></i> Expandir menú';
+        } else {
+            this.innerHTML = '<i class="fas fa-chevron-left"></i> Colapsar menú';
+        }
+    });
+}
+
+// Toggle campos de colocación
+function setupColocadoToggle() {
+    const colocadoSelect = document.getElementById('colocado-select');
+    if (!colocadoSelect) return;
+    
+    colocadoSelect.addEventListener('change', function() {
+        const colocadoInfoFields = document.querySelectorAll('.colocado-info');
+        
+        if (this.value === 'si') {
+            colocadoInfoFields.forEach(field => field.style.display = 'block');
+        } else {
+            colocadoInfoFields.forEach(field => field.style.display = 'none');
+        }
+    });
+}
+
+// Inicializar gráficos de ejemplo
+function initCharts() {
+    // Verificar si Chart.js está cargado
+    if (typeof Chart === 'undefined') {
+        console.log('Chart.js no está cargado. Cargando desde CDN...');
+        
+        // Cargar Chart.js desde CDN
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js';
+        script.onload = createCharts;
+        document.head.appendChild(script);
+    } else {
+        createCharts();
+    }
+}
+
+function createCharts() {
+    // Datos de ejemplo
+    const generoData = {
+        labels: ['Hombres', 'Mujeres', 'No binario', 'No especificado'],
+        datasets: [{
+            data: [45, 48, 5, 2],
+            backgroundColor: ['#4e73df', '#e74a3b', '#1cc88a', '#f6c23e'],
+            hoverBackgroundColor: ['#2e59d9', '#e02d1b', '#17a673', '#f4b619'],
+            hoverBorderColor: 'rgba(234, 236, 244, 1)',
+        }]
+    };
+    
+    const tendenciaData = {
+        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+        datasets: [
+            {
+                label: 'Atendidos',
+                lineTension: 0.3,
+                backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                borderColor: 'rgba(78, 115, 223, 1)',
+                pointRadius: 3,
+                pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                pointBorderColor: 'rgba(78, 115, 223, 1)',
+                pointHoverRadius: 3,
+                pointHoverBackgroundColor: 'rgba(78, 115, 223, 1)',
+                pointHoverBorderColor: 'rgba(78, 115, 223, 1)',
+                pointHitRadius: 10,
+                pointBorderWidth: 2,
+                data: [210, 280, 310, 340, 316, 305],
+            },
+            {
+                label: 'Colocados',
+                lineTension: 0.3,
+                backgroundColor: 'rgba(28, 200, 138, 0.05)',
+                borderColor: 'rgba(28, 200, 138, 1)',
+                pointRadius: 3,
+                pointBackgroundColor: 'rgba(28, 200, 138, 1)',
+                pointBorderColor: 'rgba(28, 200, 138, 1)',
+                pointHoverRadius: 3,
+                pointHoverBackgroundColor: 'rgba(28, 200, 138, 1)',
+                pointHoverBorderColor: 'rgba(28, 200, 138, 1)',
+                pointHitRadius: 10,
+                pointBorderWidth: 2,
+                data: [152, 195, 220, 265, 239, 240],
+            }
+        ],
+    };
+    
+    // Gráfico de género
+    const generoCtx = document.getElementById('generoChart');
+    if (generoCtx) {
+        new Chart(generoCtx, {
+            type: 'doughnut',
+            data: generoData,
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                cutout: '70%',
+            }
+        });
+    }
+    
+    // Gráfico de tendencia
+    const tendenciaCtx = document.getElementById('tendenciaChart');
+    if (tendenciaCtx) {
+        new Chart(tendenciaCtx, {
+            type: 'line',
+            data: tendenciaData,
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+}
+
+// Firebase
+function initFirebase() {
+    // Importar Firebase solo si está disponible
+    if (typeof firebase !== 'undefined') {
+        // Tu configuración de Firebase iría aquí
+        // Puedes agregarla después de crear tu proyecto en Firebase
+    } else {
+        console.log('Firebase no está configurado.');
+    }
+}
+
+// Manejo de formularios
+function setupFormSubmit() {
+    const dataForm = document.querySelector('#formulario-tab form');
+    if (!dataForm) return;
+    
+    dataForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Recopilar datos del formulario
+        const formData = new FormData(this);
+        const data = {};
+        
+        for (let [key, value] of formData.entries()) {
+            data[key] = value;
+        }
+        
+        // Por ahora, solo mostrar una alerta y registrar en consola
+        console.log('Datos enviados:', data);
+        
+        // Mostrar alerta de éxito
+        const alertHTML = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i> Registro guardado exitosamente.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+        
+        // Insertar alerta al principio del formulario
+        dataForm.insertAdjacentHTML('afterbegin', alertHTML);
+        
+        // Limpiar formulario
+        this.reset();
+        
+        // Remover la alerta después de 3 segundos
+        setTimeout(() => {
+            const alert = document.querySelector('.alert');
+            if (alert) {
+                alert.remove();
+            }
+        }, 3000);
+    });
+}
+Last edited 1 minute ago

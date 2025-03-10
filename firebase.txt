@@ -1,0 +1,338 @@
+// Configuración de Firebase e interacción con la base de datos
+
+// Configuración de Firebase (deberás crear tu proyecto en Firebase y reemplazar estos valores)
+const firebaseConfig = {
+    apiKey: "TU_API_KEY",
+    authDomain: "tu-proyecto.firebaseapp.com",
+    projectId: "tu-proyecto",
+    storageBucket: "tu-proyecto.appspot.com",
+    messagingSenderId: "TU_MESSAGING_SENDER_ID",
+    appId: "TU_APP_ID"
+};
+
+// Variables globales
+let db;
+let auth;
+let storage;
+
+// Inicializar Firebase
+function initFirebase() {
+    // Comprobar si el script de Firebase está cargado
+    if (typeof firebase === 'undefined') {
+        console.error('Firebase no está disponible. Asegúrate de incluir los scripts de Firebase.');
+        return false;
+    }
+    
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    
+    // Inicializar servicios
+    db = firebase.firestore();
+    auth = firebase.auth();
+    storage = firebase.storage();
+    
+    console.log('Firebase inicializado correctamente');
+    return true;
+}
+
+// --- Funciones para gestionar usuarios ---
+
+// Registrar usuario
+async function registrarUsuario(email, password, datos) {
+    try {
+        // Crear usuario en Authentication
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        
+        // Guardar datos adicionales en Firestore
+        await db.collection('usuarios').doc(user.uid).set({
+            email: email,
+            nombre: datos.nombre || '',
+            rol: datos.rol || 'usuario',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        return {
+            success: true,
+            userId: user.uid,
+            message: 'Usuario registrado exitosamente'
+        };
+    } catch (error) {
+        console.error('Error al registrar usuario:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+// Iniciar sesión
+async function iniciarSesion(email, password) {
+    try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        
+        return {
+            success: true,
+            userId: user.uid,
+            message: 'Inicio de sesión exitoso'
+        };
+    } catch (error) {
+        console.error('Error al iniciar sesión:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+// Cerrar sesión
+async function cerrarSesion() {
+    try {
+        await auth.signOut();
+        return {
+            success: true,
+            message: 'Sesión cerrada exitosamente'
+        };
+    } catch (error) {
+        console.error('Error al cerrar sesión:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+// --- Funciones para gestionar datos de capacitación ---
+
+// Guardar registro de capacitación
+async function guardarRegistroCapacitacion(datos) {
+    try {
+        // Agregar timestamp
+        datos.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+        
+        // Agregar usuario que crea el registro si está autenticado
+        const user = auth.currentUser;
+        if (user) {
+            datos.creadoPor = user.uid;
+        }
+        
+        // Guardar en Firestore
+        const docRef = await db.collection('registros').add(datos);
+        
+        return {
+            success: true,
+            id: docRef.id,
+            message: 'Registro guardado exitosamente'
+        };
+    } catch (error) {
+        console.error('Error al guardar registro:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+// Obtener registros (con filtros opcionales)
+async function obtenerRegistros(filtros = {}) {
+    try {
+        let query = db.collection('registros');
+        
+        // Aplicar filtros
+        if (filtros.fechaInicio && filtros.fechaFin) {
+            query = query.where('fecha', '>=', filtros.fechaInicio)
+                         .where('fecha', '<=', filtros.fechaFin);
+        }
+        
+        if (filtros.municipio) {
+            query = query.where('municipio', '==', filtros.municipio);
+        }
+        
+        if (filtros.genero) {
+            query = query.where('genero', '==', filtros.genero);
+        }
+        
+        if (filtros.tipoRegistro) {
+            query = query.where('tipoRegistro', '==', filtros.tipoRegistro);
+        }
+        
+        // Ordenar por fecha (más reciente primero)
+        query = query.orderBy('createdAt', 'desc');
+        
+        // Limitar resultados si es necesario
+        if (filtros.limite) {
+            query = query.limit(filtros.limite);
+        }
+        
+        // Ejecutar consulta
+        const snapshot = await query.get();
+        
+        // Convertir a array
+        const registros = [];
+        snapshot.forEach(doc => {
+            registros.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+        
+        return {
+            success: true,
+            registros: registros
+        };
+    } catch (error) {
+        console.error('Error al obtener registros:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+// Obtener estadísticas
+async function obtenerEstadisticas(filtros = {}) {
+    try {
+        // Obtener registros con los filtros
+        const resultado = await obtenerRegistros(filtros);
+        
+        if (!resultado.success) {
+            throw new Error(resultado.error);
+        }
+        
+        const registros = resultado.registros;
+        
+        // Estadísticas por género
+        const estadisticasGenero = {
+            hombres: 0,
+            mujeres: 0,
+            noBinario: 0,
+            noEspecificado: 0
+        };
+        
+        // Estadísticas por tipo de registro
+        const estadisticasTipo = {
+            capacitacion: 0,
+            movilidadLaboral: 0
+        };
+        
+        // Estadísticas por municipio
+        const estadisticasMunicipio = {};
+        
+        // Estadísticas de colocación
+        const estadisticasColocacion = {
+            colocados: 0,
+            noColocados: 0
+        };
+        
+        // Procesar cada registro
+        registros.forEach(registro => {
+            // Conteo por género
+            if (registro.genero === 'Hombre') {
+                estadisticasGenero.hombres++;
+            } else if (registro.genero === 'Mujer') {
+                estadisticasGenero.mujeres++;
+            } else if (registro.genero === 'No binario') {
+                estadisticasGenero.noBinario++;
+            } else {
+                estadisticasGenero.noEspecificado++;
+            }
+            
+            // Conteo por tipo
+            if (registro.tipoRegistro === 'Capacitación') {
+                estadisticasTipo.capacitacion++;
+            } else if (registro.tipoRegistro === 'Movilidad Laboral') {
+                estadisticasTipo.movilidadLaboral++;
+            }
+            
+            // Conteo por municipio
+            if (!estadisticasMunicipio[registro.municipio]) {
+                estadisticasMunicipio[registro.municipio] = 0;
+            }
+            estadisticasMunicipio[registro.municipio]++;
+            
+            // Conteo de colocados
+            if (registro.fueColocado === 'si') {
+                estadisticasColocacion.colocados++;
+            } else {
+                estadisticasColocacion.noColocados++;
+            }
+        });
+        
+        return {
+            success: true,
+            totalRegistros: registros.length,
+            estadisticasGenero,
+            estadisticasTipo,
+            estadisticasMunicipio,
+            estadisticasColocacion
+        };
+    } catch (error) {
+        console.error('Error al obtener estadísticas:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+// Subir archivo de Excel
+async function subirArchivoExcel(file, tieneEncabezados = true) {
+    try {
+        // Referencia al storage
+        const storageRef = storage.ref();
+        const fileRef = storageRef.child(`excel/${Date.now()}_${file.name}`);
+        
+        // Subir archivo
+        await fileRef.put(file);
+        
+        // Obtener URL de descarga
+        const downloadURL = await fileRef.getDownloadURL();
+        
+        // Registrar en Firestore
+        const uploadInfo = {
+            filename: file.name,
+            url: downloadURL,
+            tieneEncabezados: tieneEncabezados,
+            size: file.size,
+            type: file.type,
+            uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            status: 'pendiente', // pendiente, procesado, error
+            processingLog: []
+        };
+        
+        // Guardar información del archivo
+        const docRef = await db.collection('excelUploads').add(uploadInfo);
+        
+        return {
+            success: true,
+            id: docRef.id,
+            fileInfo: uploadInfo,
+            message: 'Archivo subido exitosamente'
+        };
+    } catch (error) {
+        console.error('Error al subir archivo Excel:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+// Exportar funciones
+window.firebaseService = {
+    init: initFirebase,
+    auth: {
+        registrar: registrarUsuario,
+        iniciarSesion: iniciarSesion,
+        cerrarSesion: cerrarSesion
+    },
+    registros: {
+        guardar: guardarRegistroCapacitacion,
+        obtener: obtenerRegistros,
+        estadisticas: obtenerEstadisticas
+    },
+    excel: {
+        subir: subirArchivoExcel
+    }
+};
