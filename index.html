@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Estadísticas de Capacitación y Movilidad Laboral</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            height: 100vh;
+            background-color: #043263;
+            color: white;
+            position: fixed;
+            transition: all 0.3s;
+        }
+        .main-content {
+            margin-left: 250px;
+            transition: all 0.3s;
+        }
+        .sidebar-collapsed .sidebar {
+            margin-left: -250px;
+        }
+        .sidebar-collapsed .main-content {
+            margin-left: 0;
+        }
+        .nav-link {
+            color: #e0e0e0;
+        }
+        .nav-link:hover {
+            background-color: #064b94;
+            color: white;
+        }
+        .banner-container {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 10px 0;
+        }
+        .banner-item {
+            min-width: 220px;
+            height: 80px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+            border: 1px solid #dee2e6;
+        }
+        .banner-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .card-dashboard {
+            transition: all 0.3s;
+        }
+        .card-dashboard:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .hidden {
+            display: none;
+        }
+        .tab-content {
+            padding: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex wrapper">
+        <!-- Sidebar -->
+        <div class="sidebar" style="width: 250px;">
+            <div class="p-3 text-center">
+                <h5>SISECML</h5>
+                <p class="small">Sistema de Estadísticas de Capacitación y Movilidad Laboral</p>
+            </div>
+            <hr class="bg-light">
+            <ul class="nav flex-column p-2">
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="dashboard"><i class="fas fa-tachometer-alt me-2"></i> Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="datos"><i class="fas fa-database me-2"></i> Carga de Datos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="informes"><i class="fas fa-file-alt me-2"></i> Informes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="estadisticas"><i class="fas fa-chart-bar me-2"></i> Estadísticas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="plataformas"><i class="fas fa-globe me-2"></i> Plataformas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="configuracion"><i class="fas fa-cog me-2"></i> Configuración</a>
+                </li>
+            </ul>
+            <hr class="bg-light">
+            <div class="p-3">
+                <div class="d-grid">
+                    <button class="btn btn-outline-light btn-sm" id="toggle-sidebar">
+                        <i class="fas fa-chevron-left"></i> Colapsar menú
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="main-content flex-grow-1">
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+                <div class="container-fluid">
+                    <h5 class="mb-0">
+                        <span id="current-section-title">Dashboard</span>
+                    </h5>
+                    <div class="ms-auto">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle"></i> Admin
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-user-cog me-2"></i> Perfil</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <div class="container-fluid py-4">
+                
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="content-section">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> Bienvenido al sistema de estadísticas de capacitación y movilidad laboral. Selecciona una opción del menú para comenzar.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5><i class="fas fa-link me-2"></i> Enlaces Rápidos a Plataformas</h5>
+                    <div class="banner-container mb-4">
+                        <div class="banner-item" onclick="window.open('https://www.plataformanacionaltransparencia.org.mx/', '_blank')">
+                            <div class="text-center">
+                                <i class="fas fa-file-contract fs-3 text-primary"></i>
+                                <div class="small mt-1">Plataforma Nacional de Transparencia</div>
+                            </div>
+                        </div>
+                        <div class="banner-item" onclick="window.open('https://sefiplan.qroo.gob.mx/', '_blank')">
+                            <div class="text-center">
+                                <i class="fas fa-file-invoice-dollar fs-3 text-success"></i>
+                                <div class="small mt-1">SEFIPLAN Quintana Roo</div>
+                            </div>
+                        </div>
+                        <div class="banner-item">
+                            <div class="text-center">
+                                <i class="fas fa-chart-line fs-3 text-danger"></i>
+                                <div class="small mt-1">Estadísticas de Gobierno</div>
+                            </div>
+                        </div>
+                        <div class="banner-item">
+                            <div class="text-center">
+                                <i class="fas fa-clipboard-list fs-3 text-warning"></i>
+                                <div class="small mt-1">Informes Mensuales</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5><i class="fas fa-chart-pie me-2"></i> Indicadores Generales</h5>
+                    <div class="row">
+                        <div class="col-md-3 mb-4">
+                            <div class="card card-dashboard h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="text-muted mb-2">Total Atendidos</h6>
+                                            <h3 class="mb-0">1,245</h3>
+                                        </div>
+                                        <div class="rounded-circle bg-primary bg-opacity-10 p-3">
+                                            <i class="fas fa-users text-primary"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 small">
+                                        <span class="text-success"><i class="fas fa-arrow-up me-1"></i>12%</span> vs mes anterior
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <div class="card card-dashboard h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="text-muted mb-2">Total Colocados</h6>
+                                            <h3 class="mb-0">879</h3>
+                                        </div>
+                                        <div class="rounded-circle bg-success bg-opacity-10 p-3">
+                                            <i class="fas fa-briefcase text-success"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 small">
+                                        <span class="text-success"><i class="fas fa-arrow-up me-1"></i>8%</span> vs mes anterior
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <div class="card card-dashboard h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="text-muted mb-2">Cursos Activos</h6>
+                                            <h3 class="mb-0">24</h3>
+                                        </div>
+                                        <div class="rounded-circle bg-warning bg-opacity-10 p-3">
+                                            <i class="fas fa-graduation-cap text-warning"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 small">
+                                        <span class="text-danger"><i class="fas fa-arrow-down me-1"></i>3%</span> vs mes anterior
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <div class="card card-dashboard h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="text-muted mb-2">Eficiencia</h6>
+                                            <h3 class="mb-0">70.6%</h3>
+                                        </div>
+                                        <div class="rounded-circle bg-info bg-opacity-10 p-3">
+                                            <i class="fas fa-chart-line text-info"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 small">
+                                        <span class="text-success"><i class="fas fa-arrow-up me-1"></i>2.1%</span> vs mes anterior
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-white">
+                                    <h6 class="mb-0">Distribución por Género</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="generoChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-white">
+                                    <h6 class="mb-0">Tendencia Mensual</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="tendenciaChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Datos Section -->
+                <div id="datos-section" class="content-section hidden">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <ul class="nav nav-tabs card-header-tabs">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" data-bs-toggle="tab" href="#formulario-tab">Formulario de Captura</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" data-bs-toggle="tab" href="#excel-tab">Carga de Excel</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" data-bs-toggle="tab" href="#historial-tab">Historial de Cargas</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="card-body">
+                                    <div class="tab-content">
+                                        <div class="tab-pane fade show active" id="formulario-tab">
+                                            <form>
+                                                <div class="row mb-3">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Tipo de Registro</label>
+                                                        <select class="form-select">
+                                                            <option>Capacitación</option>
+                                                            <option>Movilidad Laboral</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Fecha</label>
+                                                        <input type="date" class="form-control">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Municipio</label>
+                                                        <select class="form-select">
+                                                            <option>Benito Juárez</option>
+                                                            <option>Othón P. Blanco</option>
+                                                            <option>Solidaridad</option>
+                                                            <option>Cozumel</option>
+                                                            <option>Tulum</option>
+                                                            <option>Isla Mujeres</option>
+                                                            <option>Felipe Carrillo Puerto</option>
+                                                            <option>José María Morelos</option>
+                                                            <option>Lázaro Cárdenas</option>
+                                                            <option>Bacalar</option>
+                                                            <option>Puerto Morelos</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                
+                                                <h6 class="mb-3">Información Demográfica</h6>
+                                                <div class="row mb-3">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Género</label>
+                                                        <select class="form-select">
+                                                            <option>Hombre</option>
+                                                            <option>Mujer</option>
+                                                            <option>No binario</option>
+                                                            <option>Prefiero no decir</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Edad</label>
+                                                        <input type="number" class="form-control">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Escolaridad</label>
+                                                        <select class="form-select">
+                                                            <option>Primaria</option>
+                                                            <option>Secundaria</option>
+                                                            <option>Preparatoria</option>
+                                                            <option>Licenciatura</option>
+                                                            <option>Posgrado</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Condición</label>
+                                                        <select class="form-select">
+                                                            <option>Empleado</option>
+                                                            <option>Desempleado</option>
+                                                            <option>Estudiante</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                
+                                                <h6 class="mb-3">Información de Servicio</h6>
+                                                <div class="row mb-3">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Curso/Servicio</label>
+                                                        <select class="form-select">
+                                                            <option>Desarrollo Web</option>
+                                                            <option>Administración</option>
+                                                            <option>Contabilidad</option>
+                                                            <option>Inglés Básico</option>
+                                                            <option>Excel Avanzado</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Duración (Horas)</label>
+                                                        <input type="number" class="form-control">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Status</label>
+                                                        <select class="form-select">
+                                                            <option>Iniciado</option>
+                                                            <option>En progreso</option>
+                                                            <option>Completado</option>
+                                                            <option>Abandonado</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                
+                                                <h6 class="mb-3">Información de Colocación</h6>
+                                                <div class="row mb-3">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">¿Fue colocado?</label>
+                                                        <select class="form-select" id="colocado-select">
+                                                            <option value="no">No</option>
+                                                            <option value="si">Sí</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-4 colocado-info" style="display: none;">
+                                                        <label class="form-label">Empresa</label>
+                                                        <input type="text" class="form-control">
+                                                    </div>
+                                                    <div class="col-md-4 colocado-info" style="display: none;">
+                                                        <label class="form-label">Puesto</label>
+                                                        <input type="text" class="form-control">
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="mt-4">
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="fas fa-save me-2"></i> Guardar Registro
+                                                    </button>
+                                                    <button type="reset" class="btn btn-outline-secondary ms-2">
+                                                        <i class="fas fa-undo me-2"></i> Limpiar Formulario
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="tab-pane fade" id="excel-tab">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="card h-100">
+                                                        <div class="card-body">
+                                                            <h6 class="mb-3">Cargar archivo Excel</h6>
+                                                            <p class="small text-muted">Sube un archivo Excel con el formato correcto para importar datos masivamente. Descarga la plantilla para asegurar la compatibilidad.</p>
+                                                            <div class="mb-3">
+                                                                <a href="#" class="btn btn-outline-primary btn-sm">
+                                                                    <i class="fas fa-download me-2"></i> Descargar Plantilla
+                                                                </a>
+                                                            </div>
+                                                            <div class="input-group mb-3">
+                                                                <input type="file" class="form-control" id="excelFile" accept=".xlsx, .xls">
+                                                                <button class="btn btn-primary" type="button">
+                                                                    <i class="fas fa-upload me-2"></i> Subir
+                                                                </button>
+                                                            </div>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" id="headerCheck" checked>
+                                                                <label class="form-check-label small" for="headerCheck">
+                                                                    El archivo contiene encabezados
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="card h-100">
+                                                        <div class="card-body">
+                                                            <h6 class="mb-3">Vista previa</h6>
+                                                            <p class="small text-muted">Aquí aparecerán las primeras filas del archivo para su verificación antes de importar.</p>
+                                                            <div class="alert alert-info small">
+                                                                <i class="fas fa-info-circle me-2"></i> Sube un archivo Excel para visualizar su contenido
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="historial-tab">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Fecha</th>
+                                                            <th>Usuario</th>
+                                                            <th>Tipo</th>
+                                                            <th>Registros</th>
+                                                            <th>Status</th>
+                                                            <th>Acciones</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>10/03/2025</td>
+                                                            <td>admin@ejemplo.com</td>
+                                                            <td>Excel</td>
+                                                            <td>124</td>
+                                                            <td><span class="badge bg-success">Completado</span></td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-primary me-1">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </button>
+                                                                <button class="btn btn-sm btn-outline-danger">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>08/03/2025</td>
+                                                            <td>admin@ejemplo.com</td>
+                                                            <td>Manual</td>
+                                                            <td>52</td>
+                                                            <td><span class="badge bg-success">Completado</span></td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-primary me-1">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </button>
+                                                                <button class="btn btn-sm btn-outline-danger">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>05/03/2025</td>
+                                                            <td>usuario2@ejemplo.com</td>
+                                                            <td>Excel</td>
+                                                            <td>75</td>
+                                                            <td><span class="badge bg-warning">Con errores</span></td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-primary me-1">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </button>
+                                                                <button class="btn btn-sm btn-outline-danger">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Informes Section -->
+                <div id="informes-section" class="content-section hidden">
+                    <div class="row mb-4">
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Informe de Gobierno</h5>
+                                    <p class="card-text">Genera informes anuales con estadísticas completas para informes de gobierno.</p>
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <label class="form-label">Periodo</label>
+                                            <select class="form-select">
+                                                <option>2024-2025</option>
+                                                <option>2023-2024</option>
+                                                <option>2022-2023</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button class="btn btn-primary">
+                                            <i class="fas fa-file-pdf me-2"></i> Generar Informe
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Estadísticas Mensuales</h5>
+                                    <p class="card-text">Reportes detallados con desglose mensual por municipio y género.</p>
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <label class="form-label">Mes</label>
+                                            <select class="form-select">
+                                                <option>Marzo</option>
+                                                <option>Febrero</option>
+                                                <option>Enero</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label">Año</label>
+                                            <select class="form-select">
+                                                <option>2025</option>
+                                                <option>2024</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button class="btn btn-primary">
+                                            <i class="fas fa-file-excel me-2"></i> Generar Reporte
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Transparencia</h5>
+                                    <p class="card-text">Informes para la Plataforma Nacional de Transparencia.</p>
+                                    <div class="row mb-3">
+
+
